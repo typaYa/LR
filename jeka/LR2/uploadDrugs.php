@@ -1,7 +1,9 @@
 <?php
 
-if (!mkdir("/img", 0777, true)) {
-    mrdir("/img", 0700);
+
+$dir = "img"
+if(!is_dir($dir)) {
+    mkdir($dir, 0777, true);
 }
 if (isset($_POST['upload'])){
     echo 'qwe';
