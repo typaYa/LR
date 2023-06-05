@@ -1,5 +1,8 @@
 <?php
 
+if (!mkdir("/img", 0777, true)) {
+    mrdir("/img", 0700);
+}
 if (isset($_POST['upload'])){
     echo 'qwe';
     $connect = mysqli_connect('localhost','root','','jeka');
