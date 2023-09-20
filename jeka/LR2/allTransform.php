@@ -1,6 +1,11 @@
 <?php
-$connect = mysqli_connect('localhost','root','','jeka');
+session_start();
+$connect = mysqli_connect('localhost','root','','lr2');
 
+$selectAllReg = mysqli_query($connect,'select * from `reg` ');
+if(!isset($_SESSION['login'])){
+    header('Location:../lr3/cait.php');
+}
 ?>
 
 
@@ -21,24 +26,28 @@ $connect = mysqli_connect('localhost','root','','jeka');
 <body>
 <nav class="navbar bg-body-tertiary" style="border: 1px solid #e3e2e2">
     <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1"><a href="addTransform.php">Добавить</a></span>
+        <span class="navbar-brand mb-0 h1"><a href="../lr2/addFasad.php">Добавить</a></span>
     </div>
 </nav>
 
 <div class="container" style="margin-top: 40px">
     <form action="" method="post">
         <div class="mb-3" style="display:flex;">
-
-            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="search" PLACEHOLDER="Поиск товара...">
+            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="search" PLACEHOLDER="Введите название">
+            <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="cost" PLACEHOLDER="Введите цену">
+            <select name="option" class="form-select form-select-lg mb-3" aria-label=".form-select-lg пример">
+                <option selected></option>
+                <?php while ($regName=mysqli_fetch_assoc($selectAllReg)){
+                    ?><option value="<?php echo $regName['name']?>"><?php echo $regName['name']?></option> <?php
+                } ?>
+            </select>
             <button type="submit" class="btn btn-primary" name="submit">Поиск</button>
         </div>
-
-
     </form>
 </div>
 <?php if (!isset($_POST['submit'])){
-    $i=1;
-$selectAllDrugs = mysqli_query($connect,"select * from `img`");
+$i=1;
+$selectInfoFacture = mysqli_query($connect,"select * from `facture`");
 ?>
 <table class="table" style="margin-top: 30px">
     <thead>
@@ -51,26 +60,48 @@ $selectAllDrugs = mysqli_query($connect,"select * from `img`");
     </tr>
     </thead>
     <tbody>
-    <?php while ($product = mysqli_fetch_assoc($selectAllDrugs)){
+    <?php while ($infoFacture=mysqli_fetch_assoc($selectInfoFacture)){
 
         ?>
         <tr>
             <th scope="row"><?php echo $i?></th>
-            <td><img src="img/<?php echo $product['path'] ?>" style="max-height: 200px;max-width: 200px" alt="..." class="img-thumbnail"></td>
-            <td><?php echo $product['name']?></td>
-            <td><?php echo $product['description']?></td>
-            <td><?php echo $product['cost']; $i++;?></td>
+            <td><img src="img/<?php echo $infoFacture['path'] ?>" style="max-height: 200px;max-width: 200px" alt="..." class="img-thumbnail"></td>
+            <td><?php echo $infoFacture['name']?></td>
+            <td><?php echo $infoFacture['description']?></td>
+            <td><?php echo $infoFacture['money']; $i++;?></td>
         </tr>
         <?php
     }}else{
 
-    $name = $_POST['search'];
+    if (isset($_POST['search'])&&empty($_POST['cost'])&&empty($_POST['option'])){
+        $name = $_POST['search'];
+        $selectInfoFacture = mysqli_query($connect,"select * from `facture` where `name` like  '%$name%'");
+
+    }else if (isset($_POST['search'])&&!empty($_POST['cost'])&&empty($_POST['option'])){
+        $name = $_POST['search'];
+        $cost = $_POST['cost'];
+        $selectInfoFacture = mysqli_query($connect,"select * from `facture` where `name` like  '%$name%' and `money`='$cost'");
+    }
+    else if(isset($_POST['search'])&&empty($_POST['cost'])&&!empty($_POST['option'])){
+        $name = $_POST['search'];
+        $regName = $_POST['option'];
+        $selectIdReg = mysqli_query($connect,"select * from `reg` where name='$regName'");
+        $idReg = mysqli_fetch_assoc($selectIdReg);
+        $id = $idReg['id'];
+        $selectInfoFacture = mysqli_query($connect,"select * from `facture` where `name` like  '%$name%' and `id_region`='$id' ");
+    }
+    else if(isset($_POST['search'])&&!empty($_POST['cost'])&&!empty($_POST['option'])){
+        $name = $_POST['search'];
+        $regName = $_POST['option'];
+        $cost = $_POST['cost'];
+        $selectIdReg = mysqli_query($connect,"select * from `reg` where name='$regName'");
+        $idReg = mysqli_fetch_assoc($selectIdReg);
+        $id = $idReg['id'];
+        $selectInfoFacture = mysqli_query($connect,"select * from `facture` where `name` like  '%$name%' and `id_region`='$id' and `money`='$cost' ");
+    }
 
 
-
-    $selectAllDrugs = mysqli_query($connect,"select * from `img` where `name` like  '%$name%'");
-
-   ?>
+    ?>
     <table class="table" style="margin-top: 30px">
         <thead>
         <tr>
@@ -82,15 +113,14 @@ $selectAllDrugs = mysqli_query($connect,"select * from `img`");
         </tr>
         </thead>
         <tbody>
-        <?php while ($product = mysqli_fetch_assoc($selectAllDrugs)){
-
+        <?php while ($infoFacture = mysqli_fetch_assoc($selectInfoFacture)){
             ?>
             <tr>
             <th scope="row">1</th>
-            <td><img src="img/<?php echo $product['path'] ?>" style="max-height: 200px;max-width: 200px" alt="..." class="img-thumbnail"></td>
-            <td><?php echo $product['name']?></td>
-            <td><?php echo $product['description']?></td>
-            <td><?php echo $product['cost']?></td>
+            <td><img src="img/<?php echo $infoFacture['path'] ?>" style="max-height: 200px;max-width: 200px" alt="..." class="img-thumbnail"></td>
+            <td><?php echo $infoFacture['name']?></td>
+            <td><?php echo $infoFacture['description']?></td>
+            <td><?php echo $infoFacture['money']?></td>
             </tr><?php
         }}
         ?>
